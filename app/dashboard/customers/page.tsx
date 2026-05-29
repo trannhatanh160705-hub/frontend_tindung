@@ -1,25 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-// Dữ liệu mẫu đã cập nhật một số KH thành "Chờ duyệt" để test nút Duyệt Vay
 const initialCustomers = [
-  { id: "KH-012", name: "Trần Văn Phúc", phone: "0904.123.456", cccd: "001099123456", email: "phuc.tran@gmail.com", status: "Đang vay", date: "26/05/2026", cicScore: 720 },
-  { id: "KH-011", name: "Nguyễn Thị Hoa", phone: "0988.765.432", cccd: "034188654321", email: "hoanguyen88@yahoo.com", status: "Chờ duyệt", date: "25/05/2026", cicScore: 680 },
-  { id: "KH-010", name: "Lê Hoàng Minh", phone: "0912.345.678", cccd: "001085789123", email: "minhle.tech@company.vn", status: "Nợ xấu", date: "20/05/2026", cicScore: 450 },
-  { id: "KH-009", name: "Phạm Đại Nghĩa", phone: "0933.999.888", cccd: "022177333444", email: "nghiapham@gmail.com", status: "Đủ điều kiện", date: "15/05/2026", cicScore: 750 },
-  { id: "KH-008", name: "Đặng Thu Thảo", phone: "0977.111.222", cccd: "030195222333", email: "thaodang@gmail.com", status: "Đang vay", date: "10/05/2026", cicScore: 690 },
-  { id: "KH-007", name: "Vũ Trọng Phụng", phone: "0888.444.555", cccd: "001090555666", email: "phungvt@outlook.com", status: "Đang vay", date: "05/05/2026", cicScore: 610 },
-  { id: "KH-006", name: "Bùi Bích Phương", phone: "0909.112.233", cccd: "034189666777", email: "bichphuong.bui@gmail.com", status: "Đủ điều kiện", date: "01/05/2026", cicScore: 780 },
-  { id: "KH-005", name: "Hoàng Thanh Tùng", phone: "0934.567.890", cccd: "001080999000", email: "tunght@gmail.com", status: "Chờ duyệt", date: "28/04/2026", cicScore: 710 },
-  { id: "KH-004", name: "Lý Hải", phone: "0911.222.333", cccd: "012345678901", email: "lyhai.prod@gmail.com", status: "Nợ xấu", date: "20/04/2026", cicScore: 320 },
-  { id: "KH-003", name: "Ngô Kiến Huy", phone: "0944.555.666", cccd: "098765432109", email: "huyngo@yahoo.com", status: "Đang vay", date: "15/04/2026", cicScore: 650 },
-  { id: "KH-002", name: "Hồ Ngọc Hà", phone: "0977.888.999", cccd: "011223344556", email: "hongocha@company.vn", status: "Đủ điều kiện", date: "10/04/2026", cicScore: 810 },
-  { id: "KH-001", name: "Trấn Thành", phone: "0999.000.111", cccd: "055443322110", email: "thanh.tran@gmail.com", status: "Đang vay", date: "01/04/2026", cicScore: 740 },
+  { id: "KH-012", name: "Trần Văn Phúc", phone: "0904.123.456", cccd: "001099123456", email: "phuc.tran@gmail.com", address: "Hoàn Kiếm, Hà Nội", status: "Đang vay", date: "26/05/2026", cicScore: 720 },
+  { id: "KH-011", name: "Nguyễn Thị Hoa", phone: "0988.765.432", cccd: "034188654321", email: "hoanguyen88@yahoo.com", address: "Cầu Giấy, Hà Nội", status: "Chờ duyệt", date: "25/05/2026", cicScore: 680 },
+  { id: "KH-010", name: "Lê Hoàng Minh", phone: "0912.345.678", cccd: "001085789123", email: "minhle.tech@company.vn", address: "Quận 1, TP.HCM", status: "Nợ xấu", date: "20/05/2026", cicScore: 450 },
+  { id: "KH-009", name: "Phạm Đại Nghĩa", phone: "0933.999.888", cccd: "022177333444", email: "nghiapham@gmail.com", address: "Hải Châu, Đà Nẵng", status: "Đủ điều kiện", date: "15/05/2026", cicScore: 750 },
+  { id: "KH-008", name: "Đặng Thu Thảo", phone: "0977.111.222", cccd: "030195222333", email: "thaodang@gmail.com", address: "Đống Đa, Hà Nội", status: "Đang vay", date: "10/05/2026", cicScore: 690 },
+  { id: "KH-007", name: "Vũ Trọng Phụng", phone: "0888.444.555", cccd: "001090555666", email: "phungvt@outlook.com", address: "Thanh Xuân, Hà Nội", status: "Đang vay", date: "05/05/2026", cicScore: 610 },
+  { id: "KH-006", name: "Bùi Bích Phương", phone: "0909.112.233", cccd: "034189666777", email: "bichphuong.bui@gmail.com", address: "Ba Đình, Hà Nội", status: "Đủ điều kiện", date: "01/05/2026", cicScore: 780 },
+  { id: "KH-005", name: "Hoàng Thanh Tùng", phone: "0934.567.890", cccd: "001080999000", email: "tunght@gmail.com", address: "Quận 3, TP.HCM", status: "Chờ duyệt", date: "28/04/2026", cicScore: 710 },
+  { id: "KH-004", name: "Lý Hải", phone: "0911.222.333", cccd: "012345678901", email: "lyhai.prod@gmail.com", address: "Ninh Kiều, Cần Thơ", status: "Nợ xấu", date: "20/04/2026", cicScore: 320 },
+  { id: "KH-003", name: "Ngô Kiến Huy", phone: "0944.555.666", cccd: "098765432109", email: "huyngo@yahoo.com", address: "Bình Thạnh, TP.HCM", status: "Đang vay", date: "15/04/2026", cicScore: 650 },
+  { id: "KH-002", name: "Hồ Ngọc Hà", phone: "0977.888.999", cccd: "011223344556", email: "hongocha@company.vn", address: "Quận 7, TP.HCM", status: "Đủ điều kiện", date: "10/04/2026", cicScore: 810 },
+  { id: "KH-001", name: "Trấn Thành", phone: "0999.000.111", cccd: "055443322110", email: "thanh.tran@gmail.com", address: "Gò Vấp, TP.HCM", status: "Đang vay", date: "01/04/2026", cicScore: 740 },
 ];
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState(initialCustomers);
+
+  // --- HỨNG DỮ LIỆU TỪ TRANG HỢP ĐỒNG SANG ---
+  useEffect(() => {
+    const savedNewCustomers = localStorage.getItem('mock_new_customers');
+    if (savedNewCustomers) {
+      const parsedNewCustomers = JSON.parse(savedNewCustomers);
+      setCustomers([...parsedNewCustomers, ...initialCustomers]);
+    }
+  }, []);
   
   // --- TÍNH TOÁN KPI ---
   const countTotal = customers.length;
@@ -44,7 +52,8 @@ export default function CustomersPage() {
     return (
       c.id.toLowerCase().includes(lowerSearch) ||
       c.name.toLowerCase().includes(lowerSearch) ||
-      c.phone.includes(lowerSearch)
+      c.phone.includes(lowerSearch) ||
+      (c.cccd && c.cccd.includes(lowerSearch))
     );
   });
 
@@ -55,7 +64,7 @@ export default function CustomersPage() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentCustomers = filteredCustomers.slice(startIndex, startIndex + itemsPerPage);
 
-  // --- STATE 1: XÓA ---
+  // --- STATE 1: XÓA ĐỒNG BỘ LOCALSTORAGE ---
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedDeleteId, setSelectedDeleteId] = useState<string | null>(null);
 
@@ -68,13 +77,23 @@ export default function CustomersPage() {
     if (selectedDeleteId) {
       const updatedCustomers = customers.filter(c => c.id !== selectedDeleteId);
       setCustomers(updatedCustomers);
+      
+      const savedNewCustomers = localStorage.getItem('mock_new_customers');
+      if (savedNewCustomers) {
+        const parsedNewCustomers = JSON.parse(savedNewCustomers);
+        const remainingNewCustomers = parsedNewCustomers.filter((c: any) => c.id !== selectedDeleteId);
+        localStorage.setItem('mock_new_customers', JSON.stringify(remainingNewCustomers));
+      }
+
       setIsDeleteModalOpen(false);
       setSelectedDeleteId(null);
-      alert("🗑️ Đã xóa thông tin khách hàng!");
+      
+      const newTotalPages = Math.ceil(updatedCustomers.length / itemsPerPage);
+      if (currentPage > newTotalPages && newTotalPages > 0) setCurrentPage(newTotalPages);
     }
   };
 
-  // --- STATE 2: SỬA THÔNG TIN ---
+  // --- STATE 2: SỬA THÔNG TIN ĐỒNG BỘ LOCALSTORAGE ---
   const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [selectedEditId, setSelectedEditId] = useState<string | null>(null);
@@ -88,7 +107,7 @@ export default function CustomersPage() {
     setEditName(customer.name);
     setEditPhone(customer.phone);
     setEditEmail(customer.email);
-    setEditCCCD(customer.cccd);
+    setEditCCCD(customer.cccd || "Chưa cập nhật");
     setIsEditDrawerOpen(true);
   };
 
@@ -96,12 +115,23 @@ export default function CustomersPage() {
     if (!editName || !editPhone) return;
     setIsUpdating(true);
     setTimeout(() => {
-      setCustomers(customers.map(c => c.id === selectedEditId ? {
+      
+      const updatedList = customers.map(c => c.id === selectedEditId ? {
         ...c, name: editName, phone: editPhone, email: editEmail
-      } : c));
+      } : c);
+      setCustomers(updatedList);
+
+      const savedNewCustomers = localStorage.getItem('mock_new_customers');
+      if (savedNewCustomers) {
+        let parsedNewCustomers = JSON.parse(savedNewCustomers);
+        parsedNewCustomers = parsedNewCustomers.map((c: any) => c.id === selectedEditId ? {
+          ...c, name: editName, phone: editPhone, email: editEmail
+        } : c);
+        localStorage.setItem('mock_new_customers', JSON.stringify(parsedNewCustomers));
+      }
+
       setIsUpdating(false);
       setIsEditDrawerOpen(false);
-      alert("✨ Cập nhật thông tin khách hàng thành công!");
     }, 1000);
   };
 
@@ -120,30 +150,11 @@ export default function CustomersPage() {
     return { label: "Cảnh báo (Nợ xấu)", color: "text-rose-600", bg: "bg-rose-50", border: "border-rose-200" };
   };
 
-  // --- STATE 4: DUYỆT HỒ SƠ (TÍNH NĂNG MỚI) ---
-  const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
-  const [selectedApproveId, setSelectedApproveId] = useState<string | null>(null);
-
-  const triggerApprove = (id: string) => {
-    setSelectedApproveId(id);
-    setIsApproveModalOpen(true);
-  };
-
-  const executeApprove = () => {
-    if (selectedApproveId) {
-      // Cập nhật trạng thái của KH thành "Đang vay"
-      setCustomers(customers.map(c => c.id === selectedApproveId ? { ...c, status: "Đang vay" } : c));
-      setIsApproveModalOpen(false);
-      setSelectedApproveId(null);
-      alert("✅ Đã duyệt khoản vay thành công! Hệ thống đang giải ngân.");
-    }
-  };
-
   return (
-    <div className="space-y-8 max-w-[1500px] mx-auto relative">
+    <div className="space-y-8 max-w-[1500px] mx-auto relative p-2">
       
       {/* 1. KPI CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 animate-[fadeIn_0.4s_ease-out]">
         <div className="bg-white/80 backdrop-blur p-6 rounded-[20px] shadow-sm border border-slate-100 hover:-translate-y-1.5 transition-all duration-300 group">
           <div className="flex justify-between items-start mb-4">
             <div><h3 className="text-[13px] font-bold text-slate-500 uppercase tracking-wider">Tổng Khách Hàng</h3><div className="text-3xl font-black text-slate-800 mt-1">{countTotal}</div></div>
@@ -166,7 +177,6 @@ export default function CustomersPage() {
           </div>
         </div>
 
-        {/* Thay thẻ Đủ điều kiện thành thẻ KH Chờ duyệt để dễ theo dõi */}
         <div className="bg-white/80 backdrop-blur p-6 rounded-[20px] shadow-sm border border-slate-100 hover:-translate-y-1.5 transition-all duration-300 group">
           <div className="flex justify-between items-start mb-4">
             <div><h3 className="text-[13px] font-bold text-slate-500 uppercase tracking-wider">Hồ Sơ Chờ Duyệt</h3><div className="text-3xl font-black text-amber-500 mt-1">{countPending}</div></div>
@@ -176,7 +186,7 @@ export default function CustomersPage() {
       </div>
 
       {/* 2. BẢNG DỮ LIỆU */}
-      <div className="bg-white/90 backdrop-blur-sm rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white overflow-hidden flex flex-col">
+      <div className="bg-white/90 backdrop-blur-sm rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white overflow-hidden flex flex-col animate-[fadeIn_0.5s_ease-out]">
         <div className="p-6 md:p-8 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div>
             <h2 className="text-xl font-bold text-slate-800 tracking-tight">Hồ sơ Khách hàng</h2>
@@ -186,7 +196,7 @@ export default function CustomersPage() {
           </div>
           
           <div className="relative w-full sm:w-80">
-            <input type="text" placeholder="Nhập mã KH, Tên, SĐT và ấn Enter..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} onKeyDown={handleSearchKeyDown} className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-sm font-medium transition-all focus:bg-white" />
+            <input type="text" placeholder="Nhập mã KH, Tên, CCCD, SĐT..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} onKeyDown={handleSearchKeyDown} className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-sm font-medium transition-all focus:bg-white" />
             <svg className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             {searchInput && (
               <button onClick={() => { setSearchInput(""); setActiveSearch(""); setCurrentPage(1); }} className="absolute right-3 top-3 text-slate-400 hover:text-rose-500 transition-colors"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
@@ -195,12 +205,13 @@ export default function CustomersPage() {
         </div>
 
         <div className="overflow-x-auto min-h-[400px]">
-          <table className="w-full text-left border-collapse min-w-[900px]">
+          <table className="w-full text-left border-collapse min-w-[1050px]">
             <thead>
               <tr className="bg-slate-50/80 sticky top-0 backdrop-blur text-slate-500 text-xs uppercase tracking-[0.1em] font-bold border-y border-slate-100">
                 <th className="py-5 px-6 whitespace-nowrap">Mã KH</th>
                 <th className="py-5 px-6 whitespace-nowrap">Họ và Tên</th>
                 <th className="py-5 px-6 whitespace-nowrap">Liên hệ (SĐT / Email)</th>
+                {/* ĐÃ THÊM CỘT CCCD VÀO ĐÂY */}
                 <th className="py-5 px-6 whitespace-nowrap">Số CCCD</th>
                 <th className="py-5 px-6 whitespace-nowrap">Trạng thái</th>
                 <th className="py-5 px-6 text-center whitespace-nowrap">Thao tác</th>
@@ -229,15 +240,18 @@ export default function CustomersPage() {
                       </div>
                       <div>
                         <div className="text-slate-800 font-bold whitespace-nowrap">{customer.name}</div>
-                        <div className="text-[11px] text-slate-400 font-medium mt-0.5">Tham gia: {customer.date}</div>
+                        <div className="text-[11px] text-slate-400 font-medium mt-0.5 max-w-[200px] truncate" title={customer.address}>📍 {customer.address || "Chưa cập nhật"}</div>
                       </div>
                     </div>
                   </td>
                   <td className="py-4 px-6 whitespace-nowrap">
                     <div className="text-slate-700 font-bold">{customer.phone}</div>
-                    <div className="text-xs text-slate-400 mt-0.5">{customer.email}</div>
+                    <div className="text-xs text-slate-400 mt-0.5">{customer.email || "Không có Email"}</div>
                   </td>
-                  <td className="py-4 px-6 text-slate-600 font-semibold whitespace-nowrap font-mono">{customer.cccd}</td>
+                  
+                  {/* HIỂN THỊ DỮ LIỆU CCCD VÀO CỘT */}
+                  <td className="py-4 px-6 text-slate-600 font-semibold whitespace-nowrap font-mono">{customer.cccd || "Chưa cập nhật"}</td>
+                  
                   <td className="py-4 px-6 whitespace-nowrap">
                     <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-bold ${
                       customer.status === 'Đang vay' ? 'bg-blue-50 text-blue-600 border border-blue-200/50' : 
@@ -252,14 +266,6 @@ export default function CustomersPage() {
                   </td>
                   <td className="py-4 px-6">
                     <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      
-                      {/* NÚT DUYỆT (CHỈ HIỆN KHI KHÁCH HÀNG Ở TRẠNG THÁI CHỜ DUYỆT) */}
-                      {customer.status === 'Chờ duyệt' && (
-                        <button onClick={() => triggerApprove(customer.id)} className="p-2 text-emerald-500 hover:text-white hover:bg-emerald-500 rounded-lg transition-all shadow-sm" title="Duyệt khoản vay">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"/></svg>
-                        </button>
-                      )}
-
                       {/* NÚT XEM CHI TIẾT */}
                       <button onClick={() => triggerView(customer)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Xem chi tiết & CIC">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
@@ -314,7 +320,7 @@ export default function CustomersPage() {
             <input type="text" value={editCCCD} disabled className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-xl outline-none font-medium font-mono text-slate-400 cursor-not-allowed select-none" />
           </div>
           <div className="bg-indigo-50/30 p-5 rounded-2xl border border-indigo-100/50 space-y-4">
-            <h3 className="text-xs font-bold text-indigo-600 uppercase tracking-widest">Thông tin liên lạc</h3>
+            <h3 className="text-xs font-bold text-indigo-600 uppercase tracking-widest">Thông hiện liên lạc</h3>
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-500 ml-1">Số điện thoại</label>
               <input type="text" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-indigo-500 outline-none font-semibold text-slate-800"/>
@@ -347,7 +353,7 @@ export default function CustomersPage() {
               <div>
                 <h3 className="text-xl font-black text-slate-800">{selectedCustomer.name}</h3>
                 <p className="text-sm font-semibold text-slate-500 mt-0.5">Mã KH: {selectedCustomer.id}</p>
-                <div className="mt-2 inline-flex items-center px-3 py-1 bg-slate-100 rounded-full text-xs font-bold text-slate-600"><svg className="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>Gia nhập: {selectedCustomer.date}</div>
+                <div className="mt-2 inline-flex items-center px-3 py-1 bg-slate-100 rounded-full text-xs font-bold text-slate-600"><svg className="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>Gia nhập: {selectedCustomer.date || new Date().toLocaleDateString('vi-VN')}</div>
               </div>
             </div>
             {(() => {
@@ -373,35 +379,18 @@ export default function CustomersPage() {
             <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-5">
               <h4 className="text-sm font-bold text-slate-800 pb-2 border-b border-slate-100">Thông tin liên lạc & Định danh</h4>
               <div className="grid grid-cols-1 gap-5">
-                <div><p className="text-xs font-bold text-slate-400 uppercase">Căn cước công dân</p><p className="text-base font-semibold text-slate-800 mt-1 font-mono tracking-wider">{selectedCustomer.cccd}</p></div>
+                <div><p className="text-xs font-bold text-slate-400 uppercase">Căn cước công dân</p><p className="text-base font-semibold text-slate-800 mt-1 font-mono tracking-wider">{selectedCustomer.cccd || "Chưa cập nhật"}</p></div>
                 <div className="grid grid-cols-2 gap-4">
                   <div><p className="text-xs font-bold text-slate-400 uppercase">Số điện thoại</p><p className="text-sm font-semibold text-slate-800 mt-1">{selectedCustomer.phone}</p></div>
                   <div><p className="text-xs font-bold text-slate-400 uppercase">Tình trạng HĐ</p><p className="text-sm font-bold text-slate-800 mt-1">{selectedCustomer.status}</p></div>
                 </div>
-                <div><p className="text-xs font-bold text-slate-400 uppercase">Địa chỉ Email</p><p className="text-sm font-semibold text-blue-600 mt-1">{selectedCustomer.email}</p></div>
+                <div><p className="text-xs font-bold text-slate-400 uppercase">Địa chỉ Email</p><p className="text-sm font-semibold text-blue-600 mt-1">{selectedCustomer.email || "Không có Email"}</p></div>
+                <div><p className="text-xs font-bold text-slate-400 uppercase">Địa chỉ thường trú</p><p className="text-sm font-semibold text-slate-800 mt-1">{selectedCustomer.address || "Chưa cập nhật"}</p></div>
               </div>
             </div>
           </div>
         )}
       </div>
-
-      {/* ========================================== */}
-      {/* MODAL DUYỆT HỒ SƠ (MỚI) */}
-      {/* ========================================== */}
-      {isApproveModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsApproveModalOpen(false)}></div>
-          <div className="bg-white rounded-3xl p-6 max-w-sm w-full relative z-10 shadow-2xl text-center space-y-4 animate-[fadeIn_0.2s_auto]">
-            <div className="w-14 h-14 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center mx-auto"><svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
-            <div><h3 className="text-lg font-bold text-slate-800">Duyệt khoản vay?</h3>
-            <p className="text-xs text-slate-500 mt-1">Hồ sơ khách hàng <span className="font-bold text-slate-700">{selectedApproveId}</span> sẽ được chuyển sang trạng thái giải ngân.</p></div>
-            <div className="flex gap-3 pt-2">
-              <button onClick={() => setIsApproveModalOpen(false)} className="flex-1 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl text-sm hover:bg-slate-200 transition-colors">Hủy bỏ</button>
-              <button onClick={executeApprove} className="flex-1 py-3 bg-emerald-500 text-white font-bold rounded-xl text-sm hover:bg-emerald-600 shadow-lg shadow-emerald-500/30 transition-all">Duyệt ngay</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ========================================== */}
       {/* MODAL XÓA */}

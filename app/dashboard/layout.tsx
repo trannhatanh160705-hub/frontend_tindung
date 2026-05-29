@@ -14,11 +14,21 @@ export default function DashboardLayout({
   
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
+  // State quản lý Modal đổi mật khẩu
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isChanging, setIsChanging] = useState(false);
+
   // State lưu tên và ảnh trên thanh Topbar
   const [adminName, setAdminName] = useState("Wayne");
   const [adminAvatar, setAdminAvatar] = useState(
     "https://ui-avatars.com/api/?name=Admin+User&background=2563eb&color=fff"
   );
+
+  // --- THUẬT TOÁN ĐỒNG HỒ THỜI GIAN THỰC ---
+  const [time, setTime] = useState<Date | null>(null);
 
   // Hàm tải dữ liệu mới nhất từ localStorage lên thanh điều hướng
   const loadProfileData = () => {
@@ -29,25 +39,62 @@ export default function DashboardLayout({
   };
 
   useEffect(() => {
-    loadProfileData(); // Chạy lần đầu khi mở web
-
-    // Lắng nghe sự kiện "profileUpdated" khi nhấn Lưu ở trang Hồ sơ để cập nhật Topbar ngay lập tức
+    loadProfileData(); 
     window.addEventListener("profileUpdated", loadProfileData);
+
+    setTime(new Date());
+    const timer = setInterval(() => setTime(new Date()), 1000);
+
     return () => {
       window.removeEventListener("profileUpdated", loadProfileData);
+      clearInterval(timer);
     };
   }, []);
+
+  // Format thời gian hiển thị
+  const formattedTime = time 
+    ? `${time.toLocaleDateString('vi-VN', { weekday: 'long' })}, ${time.toLocaleDateString('vi-VN')} - ${time.toLocaleTimeString('vi-VN', { hour12: false })}`
+    : "Đang đồng bộ thời gian...";
+
+  // Hàm xử lý đổi mật khẩu giả lập
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      alert("Vui lòng điền đầy đủ các trường mật khẩu!");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      alert("Mật khẩu mới và xác nhận mật khẩu không khớp nhau!");
+      return;
+    }
+
+    setIsChanging(true);
+    // Giả lập gửi lệnh lên C# Backend xử lý trong 1 giây
+    setTimeout(() => {
+      setIsChanging(false);
+      setIsPasswordModalOpen(false);
+      
+      // Reset form
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      
+      alert("🔒 Hệ thống FinPro: Đổi mật khẩu quản trị thành công!");
+    }, 1200);
+  };
 
   return (
     <div className="flex h-screen bg-slate-50 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-50/40 via-slate-50 to-slate-100 overflow-hidden font-sans">
       
-      {/* Sidebar (Giữ nguyên phần code cũ của bạn) */}
+      {/* Sidebar */}
       <aside className="w-[260px] hidden md:flex bg-[#0F172A] text-slate-300 flex-col shadow-2xl z-20">
-        {/* ... giữ nguyên toàn bộ nội dung cụm Sidebar cũ ... */}
         <div className="h-28 flex flex-col justify-center items-center gap-2 px-6 border-b border-slate-800/60">
-          <div className="w-11 h-11 bg-gradient-to-br from-[#2563EB] to-[#38BDF8] rounded-2xl flex items-center justify-center text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]">
-            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+          
+          {/* LOGO TRONG SUỐT ĐỒNG BỘ */}
+          <div className="w-12 h-12 flex items-center justify-center shrink-0 mb-1">
+            <img src="/fintech.png" />
           </div>
+          
           <div className="text-center">
             <span className="font-extrabold text-xl tracking-tight text-white">Fin<span className="text-blue-400">Pro</span></span>
             <span className="block text-[10px] text-slate-500 uppercase tracking-[3px] font-semibold -mt-1">SYSTEM</span>
@@ -77,11 +124,15 @@ export default function DashboardLayout({
       {/* Main Area */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         <header className="h-[90px] bg-white/60 backdrop-blur-xl border-b border-white/40 flex items-center justify-between px-8 z-10 sticky top-0 shadow-sm shadow-slate-100/50">
+          
           <div className="flex flex-col">
             <h1 className="text-xl font-bold text-slate-800 flex items-center gap-2">
               Xin chào Admin <span className="animate-bounce origin-bottom text-2xl">👋</span>
             </h1>
-            <p className="text-sm font-medium text-slate-500 mt-1">Thứ Hai, 25/05/2026 • Chào mừng bạn quay trở lại làm việc.</p>
+            <p className="text-sm font-medium text-slate-500 mt-1 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              {formattedTime} • Chào mừng bạn quay trở lại làm việc.
+            </p>
           </div>
           
           <div className="flex items-center gap-6">
@@ -91,7 +142,6 @@ export default function DashboardLayout({
             <div className="relative">
               {isProfileOpen && <div className="fixed inset-0 z-40" onClick={() => setIsProfileOpen(false)}></div>}
 
-              {/* Thay đổi src ảnh và tên hiển thị động theo State */}
               <div onClick={() => setIsProfileOpen(!isProfileOpen)} className={`flex items-center gap-3 cursor-pointer group p-1 pr-2 rounded-full transition-all duration-300 relative z-50 ${isProfileOpen ? 'bg-white shadow-md' : 'hover:bg-white hover:shadow-md'}`}>
                 <div className="w-10 h-10 bg-gradient-to-tr from-blue-600 to-blue-400 rounded-full flex items-center justify-center text-white font-bold shadow-sm overflow-hidden ring-2 ring-white">
                   <img src={adminAvatar} alt="Avatar" className="w-full h-full object-cover"/>
@@ -103,7 +153,7 @@ export default function DashboardLayout({
                 <svg className={`w-4 h-4 text-slate-400 transition-transform duration-300 ml-1 ${isProfileOpen ? 'rotate-180 text-blue-600' : 'group-hover:text-blue-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/></svg>
               </div>
 
-              {/* Menu trượt (Giữ nguyên cấu trúc cũ của bạn) */}
+              {/* Menu trượt */}
               <div className={`absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-slate-100 p-2 z-50 transition-all duration-300 origin-top-right ${isProfileOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'}`}>
                 <div className="px-4 py-3 border-b border-slate-100 mb-2">
                   <p className="text-sm font-bold text-slate-800">{adminName}</p>
@@ -113,9 +163,10 @@ export default function DashboardLayout({
                   <Link href="/dashboard/profile" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>Hồ sơ cá nhân
                   </Link>
-                  <a href="#" className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors">
+                  
+                  <button onClick={() => { setIsPasswordModalOpen(true); setIsProfileOpen(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>Đổi mật khẩu
-                  </a>
+                  </button>
                 </div>
                 <div className="h-px bg-slate-100 my-2"></div>
                 <Link href="/" className="flex items-center gap-3 px-3 py-2.5 text-sm font-bold text-rose-600 hover:bg-rose-50 rounded-xl transition-colors">
@@ -131,6 +182,45 @@ export default function DashboardLayout({
           {children}
         </main>
       </div>
+
+      {/* ========================================== */}
+      {/* HỘP THOẠI (MODAL) ĐỔI MẬT KHẨU QUẢN TRỊ */}
+      {/* ========================================== */}
+      {isPasswordModalOpen && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 animate-[fadeIn_0.2s_ease-out]">
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setIsPasswordModalOpen(false)}></div>
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full relative z-10 shadow-2xl border border-slate-100 space-y-4">
+            <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg></div>
+            <div>
+              <h3 className="text-lg font-bold text-slate-800">Đổi mật khẩu hệ thống</h3>
+              <p className="text-xs text-slate-400 font-medium mt-0.5">Vui lòng cập nhật định kỳ để bảo mật thông tin Core-Credit.</p>
+            </div>
+            
+            <form onSubmit={handlePasswordSubmit} className="space-y-3.5 pt-1">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 ml-1">Mật khẩu hiện tại</label>
+                <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="••••••••" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:border-blue-500" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 ml-1">Mật khẩu mới</label>
+                <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Tối thiểu 6 ký tự..." className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:border-blue-500" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 ml-1">Xác nhận mật khẩu mới</label>
+                <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Nhập lại mật khẩu mới..." className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:border-blue-500" />
+              </div>
+
+              <div className="flex gap-3 pt-3">
+                <button type="button" onClick={() => setIsPasswordModalOpen(false)} className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl text-sm transition-colors">Hủy bỏ</button>
+                <button type="submit" disabled={isChanging} className="flex-1 py-2.5 bg-blue-600 text-white font-bold rounded-xl text-sm shadow-md shadow-blue-600/20 hover:bg-blue-700 transition-all">
+                  {isChanging ? "Đang xử lý..." : "Cập nhật"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
-}   
+}
