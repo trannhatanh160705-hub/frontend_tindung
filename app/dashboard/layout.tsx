@@ -123,7 +123,7 @@ export default function DashboardLayout({
 
       {/* Main Area */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        <header className="h-[90px] bg-white/60 backdrop-blur-xl border-b border-white/40 flex items-center justify-between px-8 z-10 sticky top-0 shadow-sm shadow-slate-100/50">
+        <header className="h-[90px] bg-white/60 backdrop-blur-xl border-b border-white/40 flex items-center justify-between px-8 z-50 sticky top-0 shadow-sm shadow-slate-100/50">
           
           <div className="flex flex-col">
             <h1 className="text-xl font-bold text-slate-800 flex items-center gap-2">
