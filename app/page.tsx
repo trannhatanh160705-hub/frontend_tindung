@@ -8,12 +8,18 @@ import Image from "next/image";
 export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   
+  // Các state quản lý Modal
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
+  const [isFeaturesModalOpen, setIsFeaturesModalOpen] = useState(false);
+  
+  // State lưu trữ giá trị người dùng nhập vào
   const [username, setUsername] = useState("ADMIN-0001");
   const [password, setPassword] = useState("password123");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Hàm xử lý Đăng nhập và Phân quyền
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (!username || !password) {
@@ -52,17 +58,14 @@ export default function LoginPage() {
       <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none"></div>
 
       {/* ========================================== */}
-      {/* 1. HEADER (Đã fix Logo trong suốt & Tăng size chữ) */}
+      {/* 1. HEADER */}
       {/* ========================================== */}
       <header className="fixed top-0 w-full h-20 bg-white/80 backdrop-blur-xl border-b border-slate-200/80 z-40 shadow-sm transition-all">
         <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
           
           <div className="flex items-center gap-3">
-            {/* KHUNG LOGO TRONG SUỐT BẢN TO */}
-            {/* Đã xóa bg-white, border. Chỉnh kích thước w-12 h-12 và dùng object-contain */}
             <div className="w-12 h-12 flex items-center justify-center shrink-0">
-              {/* Đổi src thành tên file logo của bạn, ví dụ: "/logo.png" */}
-              <img src="/fintech.png" alt="FinPro Logo" className="w-full h-full object-contain scale-110 drop-shadow-sm" />
+              <img src="/fintech.png" />
             </div>
             <div>
               <span className="font-extrabold text-2xl tracking-tight text-slate-900 leading-none block">FinPro</span>
@@ -72,20 +75,21 @@ export default function LoginPage() {
 
           <nav className="hidden md:flex items-center gap-8">
             <div className="relative group py-6 cursor-pointer">
-              {/* Đổi từ text-sm sang text-base (chữ to hơn) */}
               <div className="flex items-center gap-1.5 font-bold text-base text-slate-600 group-hover:text-blue-600 transition-colors">
                 Về chúng tôi
                 <svg className="w-4 h-4 group-hover:rotate-180 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"/></svg>
               </div>
               <div className="absolute top-full left-1/2 -translate-x-1/2 w-60 bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-slate-100 p-2.5 opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-300">
                 <div className="flex flex-col gap-1.5">
-                  {/* Đổi từ text-sm sang text-base */}
-                  <a href="#" className="px-4 py-3 hover:bg-blue-50 text-base font-semibold text-slate-700 hover:text-blue-600 rounded-xl transition-colors">Giới thiệu tổng quan</a>
-                  <a href="#" className="px-4 py-3 hover:bg-blue-50 text-base font-semibold text-slate-700 hover:text-blue-600 rounded-xl transition-colors">Tính năng của web</a>
+                  <button onClick={() => setIsAboutModalOpen(true)} className="w-full text-left px-4 py-3 hover:bg-blue-50 text-base font-semibold text-slate-700 hover:text-blue-600 rounded-xl transition-colors">
+                    Giới thiệu tổng quan
+                  </button>
+                  <button onClick={() => setIsFeaturesModalOpen(true)} className="w-full text-left px-4 py-3 hover:bg-blue-50 text-base font-semibold text-slate-700 hover:text-blue-600 rounded-xl transition-colors">
+                    Tính năng của web
+                  </button>
                 </div>
               </div>
             </div>
-            {/* Đổi từ text-sm sang text-base */}
             <button onClick={() => setIsContactModalOpen(true)} className="font-bold text-base text-slate-600 hover:text-blue-600 transition-colors py-6">
               Liên hệ
             </button>
@@ -119,7 +123,6 @@ export default function LoginPage() {
               </div>
 
               <form onSubmit={handleLogin} className="space-y-6">
-                
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Tên đăng nhập / CCCD</label>
                   <div className="relative group focus-within:text-blue-600 text-slate-400">
@@ -211,13 +214,82 @@ export default function LoginPage() {
       </main>
 
       {/* ========================================== */}
-      {/* 3. MODAL HỖ TRỢ LIÊN HỆ */}
+      {/* 3. CÁC MODAL THÔNG TIN */}
       {/* ========================================== */}
+
+      {/* Modal Giới thiệu tổng quan */}
+      {isAboutModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-[fadeIn_0.2s_ease-out]">
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsAboutModalOpen(false)}></div>
+          <div className="bg-white rounded-[32px] p-8 max-w-lg w-full relative z-10 shadow-2xl border border-slate-100">
+            <button onClick={() => setIsAboutModalOpen(false)} className="absolute top-6 right-6 p-2 bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-full transition-colors">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+            <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-6">
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight">FinPro là gì?</h3>
+            <div className="mt-4 space-y-4 text-sm font-medium text-slate-600 leading-relaxed">
+              <p>
+                <strong className="text-slate-800">FinPro System</strong> là nền tảng quản lý tín dụng lõi (Core-Credit) thế hệ mới, được thiết kế chuyên biệt để tối ưu hóa quy trình cấp phát, xét duyệt và thu hồi khoản vay.
+              </p>
+              <p>
+                Với việc ứng dụng các thuật toán chấm điểm tín dụng hiện đại cùng hệ thống lưu trữ minh bạch, FinPro giúp các tổ chức tài chính giảm thiểu rủi ro nợ xấu và mang lại trải nghiệm vay vốn mượt mà nhất cho khách hàng cá nhân lẫn doanh nghiệp.
+              </p>
+            </div>
+            <button onClick={() => setIsAboutModalOpen(false)} className="w-full mt-8 py-3.5 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors">
+              Đã hiểu
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Tính năng của web */}
+      {isFeaturesModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-[fadeIn_0.2s_ease-out]">
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsFeaturesModalOpen(false)}></div>
+          <div className="bg-white rounded-[32px] p-8 max-w-lg w-full relative z-10 shadow-2xl border border-slate-100">
+            <button onClick={() => setIsFeaturesModalOpen(false)} className="absolute top-6 right-6 p-2 bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-full transition-colors">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+            <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-6">
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+            </div>
+            <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight">Tính năng nổi bật</h3>
+            
+            <div className="mt-6 space-y-4">
+              <div className="flex gap-4">
+                <div className="mt-1 text-blue-500"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+                <div>
+                  <h4 className="font-bold text-slate-800 text-sm">Dashboard Quản trị (Admin)</h4>
+                  <p className="text-xs text-slate-500 font-medium mt-1">Theo dõi dư nợ, xét duyệt hồ sơ vay và đánh giá rủi ro nợ xấu theo thời gian thực.</p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="mt-1 text-emerald-500"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg></div>
+                <div>
+                  <h4 className="font-bold text-slate-800 text-sm">Customer Portal (Khách hàng)</h4>
+                  <p className="text-xs text-slate-500 font-medium mt-1">Giao diện tự phục vụ cho phép khách hàng tra cứu hợp đồng, lịch thanh toán và điểm CIC cá nhân.</p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="mt-1 text-purple-500"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
+                <div>
+                  <h4 className="font-bold text-slate-800 text-sm">Đồng bộ LocalStorage</h4>
+                  <p className="text-xs text-slate-500 font-medium mt-1">Luồng dữ liệu được luân chuyển mượt mà giữa các trang, cho phép thêm, sửa, xóa dữ liệu không cần F5.</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* Modal Liên hệ (Giữ nguyên) */}
       {isContactModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-[fadeIn_0.2s_ease-out]">
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsContactModalOpen(false)}></div>
           <div className="bg-white rounded-[32px] p-8 max-w-md w-full relative z-10 shadow-2xl border border-slate-100">
-            
             <button onClick={() => setIsContactModalOpen(false)} className="absolute top-6 right-6 p-2 bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-full transition-colors">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
