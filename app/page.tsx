@@ -13,13 +13,26 @@ export default function LoginPage() {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
   const [isFeaturesModalOpen, setIsFeaturesModalOpen] = useState(false);
+  const [isForgotModalOpen, setIsForgotModalOpen] = useState(false); 
   
-  // State lưu trữ giá trị người dùng nhập vào
+  // State đăng nhập
   const [username, setUsername] = useState("ADMIN-0001");
   const [password, setPassword] = useState("password123");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Hàm xử lý Đăng nhập và Phân quyền
+  // ==========================================
+  // STATE CHO QUY TRÌNH QUÊN MẬT KHẨU (3 BƯỚC)
+  // ==========================================
+  const [resetStep, setResetStep] = useState(1);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetOtp, setResetOtp] = useState("");
+  const [resetNewPass, setResetNewPass] = useState("");
+  const [resetConfirmPass, setResetConfirmPass] = useState("");
+  const [isResetting, setIsResetting] = useState(false);
+  
+  // State quản lý thông báo gửi lại mã OTP
+  const [isResendSuccess, setIsResendSuccess] = useState(false);
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (!username || !password) {
@@ -39,6 +52,87 @@ export default function LoginPage() {
         setIsLoading(false);
       }
     }, 1500);
+  };
+
+  // Hàm xử lý Khôi phục mật khẩu đa bước
+  const handleResetPasswordFlow = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsResetting(true);
+    setIsResendSuccess(false); // Tắt thông báo resend nếu đang bật
+
+    // BƯỚC 1: XÁC NHẬN EMAIL -> CHUYỂN SANG BƯỚC 2
+    if (resetStep === 1) {
+      if (!resetEmail) {
+        alert("Vui lòng nhập thông tin khôi phục!");
+        setIsResetting(false);
+        return;
+      }
+      setTimeout(() => {
+        setIsResetting(false);
+        setResetStep(2);
+      }, 1200);
+    } 
+    // BƯỚC 2: XÁC NHẬN OTP -> CHUYỂN SANG BƯỚC 3
+    else if (resetStep === 2) {
+      if (resetOtp.length < 6) {
+        alert("Mã OTP phải gồm 6 chữ số!");
+        setIsResetting(false);
+        return;
+      }
+      setTimeout(() => {
+        setIsResetting(false);
+        setResetStep(3);
+      }, 1200);
+    } 
+    // BƯỚC 3: XÁC NHẬN MẬT KHẨU MỚI -> KẾT THÚC
+    else if (resetStep === 3) {
+      if (!resetNewPass || !resetConfirmPass) {
+        alert("Vui lòng điền đủ mật khẩu mới!");
+        setIsResetting(false);
+        return;
+      }
+      if (resetNewPass !== resetConfirmPass) {
+        alert("Mật khẩu mới và xác nhận không khớp!");
+        setIsResetting(false);
+        return;
+      }
+      setTimeout(() => {
+        setIsResetting(false);
+        setIsForgotModalOpen(false);
+        
+        // Reset lại toàn bộ state
+        setResetStep(1);
+        setResetEmail("");
+        setResetOtp("");
+        setResetNewPass("");
+        setResetConfirmPass("");
+        
+        alert("✅ Hệ thống FinPro: Đặt lại mật khẩu thành công! Bạn có thể đăng nhập bằng mật khẩu mới.");
+      }, 1500);
+    }
+  };
+
+  // Hàm xử lý khi ấn Gửi lại mã
+  const handleResendOtp = () => {
+    setIsResendSuccess(true);
+    // Tự động tắt thông báo sau 3 giây
+    setTimeout(() => {
+      setIsResendSuccess(false);
+    }, 3000);
+  };
+
+  // Hàm đóng Modal Quên mật khẩu và Reset về Bước 1
+  const closeForgotModal = () => {
+    if (isResetting) return;
+    setIsForgotModalOpen(false);
+    setTimeout(() => {
+      setResetStep(1);
+      setResetEmail("");
+      setResetOtp("");
+      setResetNewPass("");
+      setResetConfirmPass("");
+      setIsResendSuccess(false);
+    }, 300);
   };
 
   return (
@@ -62,7 +156,6 @@ export default function LoginPage() {
       {/* ========================================== */}
       <header className="fixed top-0 w-full h-20 bg-white/80 backdrop-blur-xl border-b border-slate-200/80 z-40 shadow-sm transition-all">
         <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
-          
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 flex items-center justify-center shrink-0">
               <img src="/fintech.png" />
@@ -102,7 +195,6 @@ export default function LoginPage() {
       {/* ========================================== */}
       <main className="flex-1 flex items-center justify-center p-4 pt-24 pb-10">
         <div className="bg-white rounded-[32px] shadow-2xl overflow-hidden w-full max-w-[90%] flex flex-col md:flex-row border border-slate-100 min-h-[90vh] relative z-10 animate-slideUpFade">
-          
           <aside className="w-full md:w-3/5 relative min-h-[400px] md:min-h-0 bg-slate-100 hidden md:block"> 
             <Image
               src="/illustration.png" 
@@ -143,7 +235,9 @@ export default function LoginPage() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between ml-1">
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Mật khẩu</label>
-                    <a href="#" className="text-sm font-bold text-blue-600 hover:text-blue-700 hover:underline underline-offset-4 transition-all">Quên mật khẩu?</a>
+                    <button type="button" onClick={() => setIsForgotModalOpen(true)} className="text-sm font-bold text-blue-600 hover:text-blue-700 hover:underline underline-offset-4 transition-all">
+                      Quên mật khẩu?
+                    </button>
                   </div>
                   <div className="relative group focus-within:text-blue-600 text-slate-400">
                     <span className="absolute inset-y-0 left-0 flex items-center pl-4 transition-colors pointer-events-none">
@@ -217,7 +311,129 @@ export default function LoginPage() {
       {/* 3. CÁC MODAL THÔNG TIN */}
       {/* ========================================== */}
 
-      {/* Modal Giới thiệu tổng quan */}
+      {/* MODAL QUÊN MẬT KHẨU (ĐA BƯỚC) */}
+      {isForgotModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-[fadeIn_0.2s_ease-out]">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={closeForgotModal}></div>
+          <div className="bg-white rounded-[32px] p-8 max-w-md w-full relative z-10 shadow-2xl border border-slate-100">
+            <button onClick={closeForgotModal} className="absolute top-6 right-6 p-2 bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-full transition-colors">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+            <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-6">
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+            </div>
+            
+            {/* TIÊU ĐỀ THAY ĐỔI THEO BƯỚC */}
+            <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+              {resetStep === 1 && "Khôi phục mật khẩu"}
+              {resetStep === 2 && "Nhập mã xác thực"}
+              {resetStep === 3 && "Tạo mật khẩu mới"}
+            </h3>
+            <p className="text-sm font-medium text-slate-500 mt-2">
+              {resetStep === 1 && "Vui lòng nhập Email hoặc Số điện thoại đã đăng ký để nhận mã xác thực (OTP)."}
+              {resetStep === 2 && <span>Mã 6 chữ số đã được gửi đến <strong className="text-indigo-600">{resetEmail}</strong>.</span>}
+              {resetStep === 3 && "Vui lòng thiết lập mật khẩu mới cho tài khoản của bạn để tiếp tục truy cập hệ thống."}
+            </p>
+            
+            <form onSubmit={handleResetPasswordFlow} className="mt-6 space-y-5">
+              
+              {/* BƯỚC 1: NHẬP EMAIL */}
+              {resetStep === 1 && (
+                <div className="space-y-2 animate-[fadeIn_0.3s_ease-out]">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Email / Số điện thoại</label>
+                  <input 
+                    type="text" 
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                    placeholder="Nhập thông tin khôi phục..." 
+                    className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm font-semibold transition-all shadow-sm"
+                  />
+                </div>
+              )}
+
+              {/* BƯỚC 2: NHẬP OTP KÈM NÚT GỬI LẠI MÃ */}
+              {resetStep === 2 && (
+                <div className="space-y-3 animate-[fadeIn_0.3s_ease-out]">
+                  <div className="flex justify-between items-center ml-1">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Mã OTP</label>
+                    <button type="button" onClick={handleResendOtp} className="text-xs font-bold text-indigo-600 hover:text-indigo-700 transition-colors">
+                      Gửi lại mã?
+                    </button>
+                  </div>
+                  <input 
+                    type="text" 
+                    maxLength={6}
+                    value={resetOtp}
+                    onChange={(e) => setResetOtp(e.target.value)}
+                    placeholder="••••••" 
+                    className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-center tracking-[1em] text-lg font-black text-slate-800 transition-all shadow-sm"
+                  />
+                  
+                  {/* BẢNG THÔNG BÁO GỬI LẠI MÃ THÀNH CÔNG */}
+                  {isResendSuccess && (
+                    <div className="flex items-center gap-2 p-3 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-100 animate-[fadeIn_0.3s_ease-out]">
+                      <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      <span className="text-sm font-bold">Đã gửi lại mã OTP thành công!</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* BƯỚC 3: MẬT KHẨU MỚI */}
+              {resetStep === 3 && (
+                <div className="space-y-4 animate-[fadeIn_0.3s_ease-out]">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Mật khẩu mới</label>
+                    <input 
+                      type="password" 
+                      value={resetNewPass}
+                      onChange={(e) => setResetNewPass(e.target.value)}
+                      placeholder="Tối thiểu 6 ký tự..." 
+                      className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm font-semibold transition-all shadow-sm"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Xác nhận mật khẩu</label>
+                    <input 
+                      type="password" 
+                      value={resetConfirmPass}
+                      onChange={(e) => setResetConfirmPass(e.target.value)}
+                      placeholder="Nhập lại mật khẩu..." 
+                      className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm font-semibold transition-all shadow-sm"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <button 
+                type="submit" 
+                disabled={isResetting}
+                className="w-full py-3.5 bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed"
+              >
+                {isResetting ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Đang xử lý...
+                  </>
+                ) : (
+                  <>
+                    {resetStep === 1 && "Gửi mã khôi phục"}
+                    {resetStep === 2 && "Xác nhận mã OTP"}
+                    {resetStep === 3 && "Cập nhật mật khẩu"}
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Giới thiệu tổng quan (GIỮ NGUYÊN) */}
       {isAboutModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-[fadeIn_0.2s_ease-out]">
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsAboutModalOpen(false)}></div>
@@ -230,21 +446,15 @@ export default function LoginPage() {
             </div>
             <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight">FinPro là gì?</h3>
             <div className="mt-4 space-y-4 text-sm font-medium text-slate-600 leading-relaxed">
-              <p>
-                <strong className="text-slate-800">FinPro System</strong> là nền tảng quản lý tín dụng lõi (Core-Credit) thế hệ mới, được thiết kế chuyên biệt để tối ưu hóa quy trình cấp phát, xét duyệt và thu hồi khoản vay.
-              </p>
-              <p>
-                Với việc ứng dụng các thuật toán chấm điểm tín dụng hiện đại cùng hệ thống lưu trữ minh bạch, FinPro giúp các tổ chức tài chính giảm thiểu rủi ro nợ xấu và mang lại trải nghiệm vay vốn mượt mà nhất cho khách hàng cá nhân lẫn doanh nghiệp.
-              </p>
+              <p><strong className="text-slate-800">FinPro System</strong> là nền tảng quản lý tín dụng lõi (Core-Credit) thế hệ mới, được thiết kế chuyên biệt để tối ưu hóa quy trình cấp phát, xét duyệt và thu hồi khoản vay.</p>
+              <p>Với việc ứng dụng các thuật toán chấm điểm tín dụng hiện đại cùng hệ thống lưu trữ minh bạch, FinPro giúp các tổ chức tài chính giảm thiểu rủi ro nợ xấu và mang lại trải nghiệm vay vốn mượt mà nhất cho khách hàng cá nhân lẫn doanh nghiệp.</p>
             </div>
-            <button onClick={() => setIsAboutModalOpen(false)} className="w-full mt-8 py-3.5 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors">
-              Đã hiểu
-            </button>
+            <button onClick={() => setIsAboutModalOpen(false)} className="w-full mt-8 py-3.5 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors">Đã hiểu</button>
           </div>
         </div>
       )}
 
-      {/* Modal Tính năng của web */}
+      {/* Modal Tính năng của web (GIỮ NGUYÊN) */}
       {isFeaturesModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-[fadeIn_0.2s_ease-out]">
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsFeaturesModalOpen(false)}></div>
@@ -256,7 +466,6 @@ export default function LoginPage() {
               <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
             </div>
             <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight">Tính năng nổi bật</h3>
-            
             <div className="mt-6 space-y-4">
               <div className="flex gap-4">
                 <div className="mt-1 text-blue-500"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
@@ -280,12 +489,11 @@ export default function LoginPage() {
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       )}
 
-      {/* Modal Liên hệ (Giữ nguyên) */}
+      {/* Modal Liên hệ (GIỮ NGUYÊN) */}
       {isContactModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-[fadeIn_0.2s_ease-out]">
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsContactModalOpen(false)}></div>
@@ -293,14 +501,11 @@ export default function LoginPage() {
             <button onClick={() => setIsContactModalOpen(false)} className="absolute top-6 right-6 p-2 bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-full transition-colors">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
-
             <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6">
               <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
             </div>
-            
             <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight">Hỗ trợ khách hàng</h3>
             <p className="text-sm font-medium text-slate-500 mt-2">Chúng tôi luôn sẵn sàng hỗ trợ bạn 24/7. Vui lòng liên hệ qua các kênh dưới đây.</p>
-            
             <div className="mt-8 space-y-4">
               <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100">
                 <div className="mt-1 text-slate-400"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>
@@ -309,7 +514,6 @@ export default function LoginPage() {
                   <p className="text-sm font-bold text-slate-800 mt-1 leading-relaxed">Tòa nhà FinPro Tower<br/>Số 58 Lê Văn Thiêm, Thanh Xuân, Hà Nội</p>
                 </div>
               </div>
-
               <div className="flex items-center gap-4 p-4 rounded-2xl bg-blue-50/50 border border-blue-100 group hover:bg-blue-50 transition-colors cursor-pointer">
                 <div className="text-blue-500"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg></div>
                 <div className="flex-1">
@@ -318,7 +522,6 @@ export default function LoginPage() {
                 </div>
                 <button className="text-xs font-bold bg-white text-blue-600 px-3 py-1.5 rounded-lg shadow-sm group-hover:shadow-md transition-all">Gọi ngay</button>
               </div>
-
               <div className="flex items-center gap-4 p-4 rounded-2xl bg-emerald-50/50 border border-emerald-100 group hover:bg-emerald-50 transition-colors cursor-pointer">
                 <div className="text-emerald-500"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div>
                 <div className="flex-1">
